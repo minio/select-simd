@@ -18,40 +18,41 @@
 
 // func evaluateCompareString(input []byte, indices []uint32, compare []byte, out []uint64)
 TEXT ·evaluateCompareString(SB), 7, $0
-	MOVQ   in+0(FP), SI           // SI: &in
-	MOVQ   indices+24(FP), DI     // indices
-	MOVQ   indices_len+32(FP), R9 // length
-	MOVQ   compare+48(FP), AX     // &compare
-	MOVQ   out+72(FP), BX         // &out
+	MOVQ in+0(FP), SI           // SI: &in
+	MOVQ indices+24(FP), DI     // indices
+	MOVQ indices_len+32(FP), R9 // length
+	MOVQ compare+48(FP), AX     // &compare
+	MOVQ out+72(FP), BX         // &out
 
-    MOVOU  (AX), X0         // comparison string
-    MOVQ   trueMask+96(FP), AX
+	MOVOU (AX), X0            // comparison string
+	MOVQ  trueMask+96(FP), AX
 
 loop64:
-    XORQ   R10, R10
-    MOVQ   $1, R11
+	XORQ R10, R10
+	MOVQ $1, R11
 
 loop:
-    MOVL   (DI), DX         // load index
-    ADDQ   $4, DI
-    MOVOU  (SI)(DX*1), X1   // load unaliged
-    VPCMPEQB   X0,  X1,  X2
-    VPMOVMSKB  X2,  CX
-    ANDQ   AX, CX           // clear any top bits
-    CMPQ   CX, AX
-    JNE    skip
-    ORQ    R11, R10         // set result bit
-skip:
-	SUBQ   $1, R9
-	JZ     done
+	MOVL      (DI), DX       // load index
+	ADDQ      $4, DI
+	MOVOU     (SI)(DX*1), X1 // load unaliged
+	VPCMPEQB  X0, X1, X2
+	VPMOVMSKB X2, CX
+	ANDQ      AX, CX         // clear any top bits
+	CMPQ      CX, AX
+	JNE       skip
+	ORQ       R11, R10       // set result bit
 
-    SHLQ   $1, R11
-    CMPQ   R11, $0          // processed 64-bits?
-    JNE    loop
-    MOVQ   R10, (BX)        // store result
-    ADDQ   $8, BX
-    JMP    loop64
+skip:
+	SUBQ $1, R9
+	JZ   done
+
+	SHLQ $1, R11
+	CMPQ R11, $0   // processed 64-bits?
+	JNE  loop
+	MOVQ R10, (BX) // store result
+	ADDQ $8, BX
+	JMP  loop64
 
 done:
-    MOVQ   R10, (BX)
-    RET
+	MOVQ R10, (BX)
+	RET
