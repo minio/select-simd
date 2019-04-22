@@ -23,8 +23,17 @@ This package is in early development and does not yet cover a wide range of oper
 
 ## High Performance
 
+Single core
+
 ```
-BenchmarkSelectCsv-8            2         531865224 ns/op        6971.24 MB/s           0 B/op          0 allocs/op
+BenchmarkSelectCsv-8                   5         271120281 ns/op        4558.57 MB/s           0 B/op          0 allocs/op
+```
+
+Multi-core
+```
+BenchmarkParallel_2cpus_256KB-8            10         125521689 ns/op         9846.27 MB/s     133158 B/op         21 allocs/op
+BenchmarkParallel_3cpus_256KB-8            20          89044577 ns/op        13879.79 MB/s     199611 B/op         30 allocs/op
+BenchmarkParallel_4cpus_256KB-8            20          80467654 ns/op        15359.22 MB/s     265046 B/op         36 allocs/op
 ```
 
 ## Architecture

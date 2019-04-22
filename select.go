@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"math/bits"
 	"sync"
+	"runtime"
 )
 
 // count set bits in bitmask slice
@@ -75,7 +76,7 @@ func ProcessCount(chunks []*bytes.Buffer, position uint64, condition string) (re
 }
 
 // Perform select count(*) operation in parallel
-func ProcessCountParallel(chunks []*bytes.Buffer, position uint64, condition string) (result int64) {
+func processCountParallel(chunks []*bytes.Buffer, position uint64, condition string, cpus int) (result int64) {
 
 	var wg sync.WaitGroup
 	chunkChan := make(chan chunkInput)
@@ -84,7 +85,7 @@ func ProcessCountParallel(chunks []*bytes.Buffer, position uint64, condition str
 	rows := bytes.Count(chunks[0].Bytes(), []byte{0x0a}) * 2
 
 	// Start one go routine per CPU
-	for i := 0; i < 16; /**cpu*/ i++ {
+	for i := 0; i < cpus; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -114,6 +115,11 @@ func ProcessCountParallel(chunks []*bytes.Buffer, position uint64, condition str
 	}
 
 	return
+}
+
+// Perform select count(*) operation in parallel
+func ProcessCountParallel(chunks []*bytes.Buffer, position uint64, condition string) (result int64) {
+	return processCountParallel(chunks, position, condition, runtime.NumCPU())
 }
 
 type chunkInput struct {
